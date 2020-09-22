@@ -34,6 +34,16 @@ public:
 		}
 		player_point.clear();
 	}
+	void init_game_status(int _stack_nums, int _color_nums, int _chess_nums, int _player_nums){
+		stack_nums = _stack_nums;
+		color_nums = _color_nums;
+		chess_nums = _chess_nums;
+		player_nums = _player_nums;
+		player_point.clear();
+		for(int i = 0; i < player_nums; i++){
+			player_point.push_back(0);
+		}
+	}
 	void init_game_status(){
 		cout << "Number of stacks" << endl;
 		cin >> stack_nums;
@@ -57,26 +67,31 @@ public:
 		}// setup every game board with specified color
 	}
 	void auto_setup(){
+		srand(time(NULL));
 		for(int current_stack = 0; current_stack < stack_nums; current_stack++){
+			deque<int> tmp;
 			for(int current_idx = 0; current_idx < chess_nums; current_idx++){
-				srand(time(NULL));
-				game_board[current_stack][current_idx] = rand()%color_nums + 1;
+				tmp.push_back((rand()%color_nums) + 1);
 			}
+			game_board.push_back(tmp);
 		}
-	}
-	void move(int init_stack, bool direction, int player){
+	}//random setup game board
+	void move(int init_stack, bool direction, int player){// 1 = clockwise 0 = counter clockwise
 		if(direction == 1){
 			int final_stack = (init_stack + game_board[init_stack].size())%stack_nums;
-			int final_stack_size = game_board[final_stack].size()+1;
 			int init_stack_size = game_board[init_stack].size();
 			for(int current_stack = init_stack+1; current_stack <= init_stack_size+init_stack; current_stack++){
-				game_board[current_stack].push_back(game_board[init_stack].front());
+				game_board[current_stack%stack_nums].push_back(game_board[init_stack].front());
 				game_board[init_stack].pop_front();
 			}
-			if(game_board[final_stack][final_stack_size-1] == game_board[final_stack][final_stack_size-2]){
-				player_point[player] += game_board[final_stack][final_stack_size-1];
-				game_board[final_stack].pop_back();
-				game_board[final_stack].pop_back();
+			if(game_board[final_stack].size() > 1){
+				int final_stack_idx_last = *(game_board[final_stack].end()-1);
+				int final_stack_idx_second_last = *(game_board[final_stack].end()-2);
+				if(final_stack_idx_last == final_stack_idx_second_last){
+					player_point[player] += final_stack_idx_last;
+					game_board[final_stack].pop_back();
+					game_board[final_stack].pop_back();
+				}
 			}
 		}
 		else if(direction == 0){
@@ -84,13 +99,17 @@ public:
 			int final_stack_size = game_board[final_stack].size()+1;
 			int init_stack_size = game_board[init_stack].size();
 			for(int current_stack = init_stack-1; current_stack >= init_stack-init_stack_size; current_stack--){
-				game_board[current_stack].push_back(game_board[init_stack].front());
+				game_board[current_stack%stack_nums].push_back(game_board[init_stack].front());
 				game_board[init_stack].pop_front();	
 			}
-			if(game_board[final_stack][final_stack_size-1] == game_board[final_stack][final_stack_size-2]){
-				player_point[player] += game_board[final_stack][final_stack_size-1];
-				game_board[final_stack].pop_back();
-				game_board[final_stack].pop_back();
+			if(game_board[final_stack].size() > 1){
+				int final_stack_idx_last = *(game_board[final_stack].end()-1);
+				int final_stack_idx_second_last = *(game_board[final_stack].end()-2);
+				if(final_stack_idx_last == final_stack_idx_second_last){
+					player_point[player] += final_stack_idx_last;
+					game_board[final_stack].pop_back();
+					game_board[final_stack].pop_back();
+				}
 			}
 		}
 	}
@@ -112,9 +131,28 @@ public:
 		}
 		return 0;
 	}
-	void show_game(){
-		
+	void show_game_status(){
+		cout << "===================================================" << endl;
+		for(int current_stack = 0; current_stack < stack_nums; current_stack++) {
+			cout << current_stack << " ";
+			for(int current_idx = 0; current_idx < game_board[current_stack].size(); current_idx++) {
+				cout << game_board[current_stack][current_idx];
+			}
+			cout << endl;
+		}
+		cout << "===================================================" << endl;
+		for(int current_player_idx = 0; current_player_idx < player_nums; current_player_idx++) {
+			cout << " player" << current_player_idx << ": " << player_point[current_player_idx];
+		}
+		cout << endl;
 	}
 };
 int main(){
+	rincala game;
+	game.init_game_status();
+	game.auto_setup();
+	game.show_game_status();
+	game.move(1, 1, 1);
+	cout <<  "887" << endl;
+	game.show_game_status();
 }
