@@ -34,6 +34,9 @@ public:
 		}
 		player_point.clear();
 	}
+	~rincala(){
+		clear();
+	}
 	void init_game_status(int _stack_nums, int _color_nums, int _chess_nums, int _player_nums){
 		stack_nums = _stack_nums;
 		color_nums = _color_nums;
@@ -113,24 +116,30 @@ public:
 			}
 		}
 	}
-	int calculate_points (int init_stack, bool direction){
+	/*int calculate_points (int init_stack, bool direction){
 		int final_stack = 0;
-		int final_stack_size = 0;
-		int init_stack_size = game_board[init_stack].size();
 		if(direction == 1){
 			final_stack = (init_stack + game_board[init_stack].size())%stack_nums;
-			final_stack_size = game_board[final_stack].size()+1;
-
 		}
 		else if(direction == 0){
 			final_stack = (init_stack - game_board[init_stack].size())%stack_nums;
-			final_stack_size = game_board[final_stack].size()+1;
 		}
-		if(game_board[init_stack][init_stack_size-1] == game_board[final_stack][final_stack_size-1]){
-			return game_board[init_stack][init_stack_size-1];
+		deque<int> tmp = game_board[init_stack];
+		game_board[init_stack].clear();
+		int final_stack_size = game_board[final_stack].size();
+		if(final_stack_size > 1){
+			int final_stack_idx_last = *(game_board[final_stack].end()-1);
+			int final_stack_idx_second_last = *(game_board[final_stack].end()-2);
+			if( final_stack_idx_last == final_stack_idx_second_last){
+				game_board[init_stack] = tmp;
+				return final_stack_idx_last;
+			}
 		}
-		return 0;
-	}
+		else{
+			game_board[init_stack] = tmp;
+			return 0;
+		}
+	}*/
 	void show_game_status(){
 		cout << "===================================================" << endl;
 		for(int current_stack = 0; current_stack < stack_nums; current_stack++) {
@@ -152,7 +161,8 @@ int main(){
 	game.init_game_status();
 	game.auto_setup();
 	game.show_game_status();
+	cout << game.calculate_points(1, 1) << endl;
 	game.move(1, 1, 1);
-	cout <<  "887" << endl;
+
 	game.show_game_status();
 }
