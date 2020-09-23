@@ -12,12 +12,14 @@ public:
 	int direction;
 	int player_obtain_points;
 	int final_stack;
+	int init_stack_size;
 	log(){
 		player = 0;
 		init_stack = 0;
 		direction = 0;
 		player_obtain_points = 0;
 		final_stack = 0;
+		init_stack_size = 0;
 	}
 };
 class game_status{
@@ -92,13 +94,16 @@ public:
 		movement.init_stack = init_stack;
 		movement.direction = direction;
 		movement.player = player;
+		movement.init_stack_size = game.game_board[init_stack].size();
+		deque<int> init_stack_cpy = game.game_board[init_stack];
+		game.game_board[init_stack].clear();
 		if(direction == 1){
-			int final_stack = (init_stack + game.game_board[init_stack].size())%game.stack_nums;
-			int init_stack_size = game.game_board[init_stack].size();
+			int final_stack = (init_stack + init_stack_cpy.size())%game.stack_nums;
+			int init_stack_size = init_stack_cpy.size();
 			movement.final_stack = final_stack;
 			for(int current_stack = init_stack+1; current_stack <= init_stack_size+init_stack; current_stack++){
-				game.game_board[current_stack%game.stack_nums].push_back(game.game_board[init_stack].front());
-				game.game_board[init_stack].pop_front();
+				game.game_board[current_stack%game.stack_nums].push_back(init_stack_cpy.front());
+				init_stack_cpy.pop_front();
 			}
 			if(game.game_board[final_stack].size() > 1){
 				int final_stack_idx_last = *(game.game_board[final_stack].end()-1);
@@ -115,12 +120,12 @@ public:
 			}
 		}
 		else if(direction == 0){
-			int final_stack = (init_stack - game.game_board[init_stack].size())%game.stack_nums;
-			int init_stack_size = game.game_board[init_stack].size();
+			int final_stack = (init_stack - init_stack_cpy.size())%game.stack_nums;
+			int init_stack_size = init_stack_cpy.size();
 			movement.final_stack = final_stack;
 			for(int current_stack = init_stack-1; current_stack >= init_stack-init_stack_size; current_stack--){
-				game.game_board[current_stack%game.stack_nums].push_back(game.game_board[init_stack].front());
-				game.game_board[init_stack].pop_front();
+				game.game_board[current_stack%game.stack_nums].push_back(init_stack_cpy.front());
+				init_stack_cpy.pop_front();
 			}
 			if(game.game_board[final_stack].size() > 1){
 				int final_stack_idx_last = *(game.game_board[final_stack].end()-1);
@@ -159,7 +164,33 @@ public:
 			return;
 		}
 		else{
-			
+			log latest_log = game.game_log.back();
+			int init_stack = latest_log.init_stack;
+			int init_stack_size = latest_log.init_stack_size;
+			int stack_nums = game.stack_nums;
+			int player = latest_log.player;
+			int player_obtain_points = latest_log.player_obtain_points;
+			int final_stack = latest_log.final_stack;
+			game.game_board[final_stack].push_back(player_obtain_points);
+			game.game_board[final_stack].push_back(player_obtain_points);
+			if(latest_log.direction == 1){
+				deque<int> tmp;
+				for(int current_stack = init_stack+1; current_stack <= init_stack+init_stack_size; current_stack++) {
+					tmp.push_back(game.game_board[current_stack%stack_nums].back());
+					game.game_board[current_stack%stack_nums].pop_back();
+				}
+				game.game_board[init_stack] = tmp;
+			}
+			else{
+				deque<int> tmp;
+				for(int current_stack = init_stack-1; current_stack >= init_stack-init_stack_size; current_stack--) {
+					tmp.push_back(game.game_board[current_stack%stack_nums].back());
+					game.game_board[current_stack%stack_nums].pop_back();
+				}
+				game.game_board[init_stack] = tmp;
+			}
+			game.game_log.pop_back();
+			game.player_point[player] -= player_obtain_points;
 		}
 	}
 };
@@ -169,6 +200,8 @@ int main(){
 	game.auto_setup();
 	game.show_game_status();
 	game.move(1, 1, 1);
+	game.show_game_status();
+	game.undo();
 	game.show_game_status();
 }
 /*
