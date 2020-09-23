@@ -38,6 +38,9 @@ public:
 	rincala(){
 		clear();
 	}
+	~rincala(){
+		clear();
+	}
 	void clear(){
 		game.game_log.clear();
 		game.stack_nums = 0;
@@ -120,11 +123,23 @@ public:
 			}
 		}
 		else if(direction == 0){
-			int final_stack = (init_stack - init_stack_cpy.size())%game.stack_nums;
+			int final_stack;
 			int init_stack_size = init_stack_cpy.size();
+			if((init_stack - init_stack_size)%game.stack_nums < 0){
+				final_stack = (init_stack - init_stack_size)%game.stack_nums + game.stack_nums;
+			}
+			else{
+				final_stack = (init_stack - init_stack_size)%game.stack_nums;
+			}
 			movement.final_stack = final_stack;
+			cout << final_stack << endl;
 			for(int current_stack = init_stack-1; current_stack >= init_stack-init_stack_size; current_stack--){
-				game.game_board[current_stack%game.stack_nums].push_back(init_stack_cpy.front());
+				if(current_stack%game.stack_nums < 0){
+					game.game_board[current_stack%game.stack_nums+game.stack_nums].push_back(init_stack_cpy.front());
+				}
+				else{
+					game.game_board[current_stack%game.stack_nums].push_back(init_stack_cpy.front());
+				}
 				init_stack_cpy.pop_front();
 			}
 			if(game.game_board[final_stack].size() > 1){
@@ -142,13 +157,13 @@ public:
 			}
 		}
 		game.game_log.push_back(movement);
-	}
+	}// move a specified stack
 	void show_game_status(){
 		cout << "===================================================" << endl;
 		for(int current_stack = 0; current_stack < game.stack_nums; current_stack++) {
 			cout << current_stack << " ";
 			for(int current_idx = 0; current_idx < game.game_board[current_stack].size(); current_idx++) {
-				cout << game.game_board[current_stack][current_idx];
+				cout << game.game_board[current_stack][current_idx] << ",";
 			}
 			cout << endl;
 		}
@@ -157,7 +172,7 @@ public:
 			cout << " player" << current_player_idx << ": " << game.player_point[current_player_idx];
 		}
 		cout << endl;
-	}
+	}//show what is going on 
 	void undo(){
 		if(game.game_log.empty()){
 			cout << "already the last one" << endl;
@@ -165,28 +180,38 @@ public:
 		}
 		else{
 			log latest_log = game.game_log.back();
-			int init_stack = latest_log.init_stack;
-			int init_stack_size = latest_log.init_stack_size;
-			int stack_nums = game.stack_nums;
-			int player = latest_log.player;
-			int player_obtain_points = latest_log.player_obtain_points;
-			int final_stack = latest_log.final_stack;
-			game.game_board[final_stack].push_back(player_obtain_points);
-			game.game_board[final_stack].push_back(player_obtain_points);
+			int init_stack = latest_log.init_stack; //prev move stack
+			int init_stack_size = latest_log.init_stack_size; // prev move stack size
+			int stack_nums = game.stack_nums; // total number of stacks
+			int player = latest_log.player; // player movement
+			int player_obtain_points = latest_log.player_obtain_points; // player obtain points
+			int final_stack = latest_log.final_stack; // which stack is the final one
+			if(player_obtain_points > 0){
+				game.game_board[final_stack].push_back(player_obtain_points); 
+				game.game_board[final_stack].push_back(player_obtain_points);
+			}// if the player gets any points, must reset
 			if(latest_log.direction == 1){
 				deque<int> tmp;
-				for(int current_stack = init_stack+1; current_stack <= init_stack+init_stack_size; current_stack++) {
-					tmp.push_back(game.game_board[current_stack%stack_nums].back());
-					game.game_board[current_stack%stack_nums].pop_back();
+				for(int current_stack = final_stack; current_stack > final_stack-init_stack_size; current_stack--) {
+					if(current_stack%stack_nums < 0){
+						tmp.push_back(game.game_board[(current_stack%stack_nums)+stack_nums].back());
+						game.game_board[(current_stack%stack_nums)+stack_nums].pop_back();
+					}
+					else{
+						tmp.push_back(game.game_board[current_stack%stack_nums].back());
+						game.game_board[current_stack%stack_nums].pop_back();
+					}
 				}
+				reverse(tmp.begin(), tmp.end());
 				game.game_board[init_stack] = tmp;
 			}
 			else{
 				deque<int> tmp;
-				for(int current_stack = init_stack-1; current_stack >= init_stack-init_stack_size; current_stack--) {
+				for(int current_stack = final_stack; current_stack < final_stack+init_stack_size; current_stack++) {
 					tmp.push_back(game.game_board[current_stack%stack_nums].back());
 					game.game_board[current_stack%stack_nums].pop_back();
 				}
+				reverse(tmp.begin(), tmp.end());
 				game.game_board[init_stack] = tmp;
 			}
 			game.game_log.pop_back();
@@ -196,30 +221,11 @@ public:
 };
 int main(){
 	rincala game;
-	game.init_game_status();
+	game.init_game_status(5, 1, 10, 2);
 	game.auto_setup();
 	game.show_game_status();
-	game.move(1, 1, 1);
+	game.move(1, 0, 1);
 	game.show_game_status();
 	game.undo();
 	game.show_game_status();
 }
-/*
-	int calculate_points (int init_stack, bool direction){
-		int final_stack = 0;
-		int final_stack_size = 0;
-		int init_stack_size = game_board[init_stack].size();
-		if(direction == 1){
-			final_stack = (init_stack + game_board[init_stack].size())%stack_nums;
-			final_stack_size = game_board[final_stack].size()+1;
-
-		}
-		else if(direction == 0){
-			final_stack = (init_stack - game_board[init_stack].size())%stack_nums;
-			final_stack_size = game_board[final_stack].size()+1;
-		}
-		if(game_board[init_stack][init_stack_size-1] == game_board[final_stack][final_stack_size-1]){
-			return game_board[init_stack][init_stack_size-1];
-		}
-		return 0;
-	}*/
