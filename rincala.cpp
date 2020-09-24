@@ -4,6 +4,7 @@
 #include<algorithm>
 #include<ctime>
 #include<cstdlib>
+#include<set>
 using namespace std;
 class log{
 public:
@@ -49,6 +50,20 @@ public:
 		game.player_nums = 0;
 		game.player_point.clear();
 		game.game_board.clear();
+	}
+	bool game_over(){
+		set<int> check;
+		for(int current_stack = 0; current_stack < game.stack_nums; current_stack++){
+			for(int element : game.game_board[current_stack]){
+				if(check.find(element) != check.end()){
+					return false;
+				}
+				else{
+					check.insert(element);
+				}
+			}
+		}
+		return true;
 	}
 	void init_game_status(int _stack_nums, int _color_nums, int _chess_nums, int _player_nums){
 		game.stack_nums = _stack_nums;
@@ -220,12 +235,13 @@ public:
 	}
 };
 int main(){
+	/*
 	rincala game;
-	game.init_game_status(5, 1, 10, 2);
+	game.init_game_status(5, 5, 10, 1);
 	game.auto_setup();
 	game.show_game_status();
-	game.move(1, 0, 1);
-	game.show_game_status();
-	game.undo();
-	game.show_game_status();
+	while(!game.game_over()){
+		game.move(rand()%5, rand()%2, 0);
+		game.show_game_status();
+	}*/
 }
