@@ -235,13 +235,4 @@ public:
 	}
 };
 int main(){
-	/*
-	rincala game;
-	game.init_game_status(5, 5, 10, 1);
-	game.auto_setup();
-	game.show_game_status();
-	while(!game.game_over()){
-		game.move(rand()%5, rand()%2, 0);
-		game.show_game_status();
-	}*/
 }
