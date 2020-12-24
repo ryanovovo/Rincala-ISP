@@ -173,6 +173,32 @@ public:
 		}
 		game.game_log.push_back(movement);
 	}// move a specified stack
+	int calculate_points(int init_stack, int direction){
+		int before = game.player_point[0];
+		move(init_stack, direction, 0);
+		int after = game.player_point[0];
+		undo();
+		return after - before;
+	}
+	pair<int, int> max_point(){
+		pair <int, int> rt; // max stack it, direction
+		int current_max_val = 0;
+		rt.first  = 0;
+		rt.second = 0;
+		for(int current_stack = 0; current_stack < game.stack_nums; current_stack++){
+			if(current_max_val.first < calculate_points(current_stack, 0)){
+				current_max_val.fisrt  = calculate_points(current_stack, 0);
+				current_max_val.second = current_stack;
+			}
+		}
+		for(int current_stack = 0; current_stack < game.stack_nums; current_stack++){
+			if(current_max_val.first < calculate_points(current_stack, 1)){
+				current_max_val.fisrt  = calculate_points(current_stack, 1);
+				current_max_val.second = current_stack;
+			}
+		}
+		return current_max_val;
+	}
 	void show_game_status(){
 		cout << "===================================================" << endl;
 		for(int current_stack = 0; current_stack < game.stack_nums; current_stack++) {
@@ -235,4 +261,10 @@ public:
 	}
 };
 int main(){
+	rincala game;
+	game.init_game_status(10, 5, 7, 2);
+	game.auto_setup();
+	while(!game.game_over()){
+		pair<int, int> mx = game.max_point;
+	}
 }
